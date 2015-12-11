@@ -1,0 +1,62 @@
+components:
+  bus:
+    type: simple-bus
+
+  cpu:
+    type: cpu-arm
+    model: arm1176
+    bus-parent: bus
+
+  mem:
+    type: memory
+    size: &mem_size 256M
+    bus-parent: bus
+    bus-mapping: { &mem_start 0x00000000: *mem_size }
+
+  irq-ctrl:
+    type: bcm2835-irq-ctrl
+    bus-parent: bus
+    bus-mapping: { 0x2000b200: 0x200 }
+    irq-parent: cpu
+
+  uart:
+    type: uart-pl011
+    bus-parent: bus
+    bus-mapping: { 0x20201000: 0x1000 }
+    irq-parent: irq-ctrl
+    irq-mapping: 57
+
+  gpio:
+    type: bcm2835-gpio
+    bus-parent: bus
+    bus-mapping: { 0x20200000: 0xb4 }
+
+  sys-timer:
+    type: bcm2835-system-timer
+    bus-parent: bus
+    bus-mapping: { 0x20003000: 0x1c }
+    irq-parent: irq-ctrl
+    irq-mapping: 3
+
+  arm-timer:
+    type: bcm2835-sp804
+    bus-parent: bus
+    bus-mapping: { 0x2000b400: 0x24 }
+    irq-parent: irq-ctrl
+    irq-mapping: 64
+
+  vcore:
+    type: bcm2835-vcore
+    bus-parent: bus
+    child-bus-mapping:
+      mailbox: { 0x2000b880: 0x24 }
+    irq-parent: irq-ctrl
+    irq-mapping:
+      mailbox-irq: 65
+
+bootloader:
+  architecture: arm
+  ram-start: *mem_start
+  kernel-load-addr: 0x00008000
+  machine-id: 0x00000c42
+  dtb-load-addr: 0x00000100
