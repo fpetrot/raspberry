@@ -119,11 +119,11 @@ raspberry_miniuart::raspberry_miniuart(sc_module_name _name) :
     signal(SIGPIPE, SIG_IGN);
 
     if (pipe(ppout) < 0) {
-        ERR_STREAM(name() << " can't open out pipe!" << std::endl);
+        ERR_STREAM(name() << " can't open out pipe!\n");
         exit(0);
     }
     if (pipe(ppin) < 0) {
-        ERR_STREAM(name() << " can't open in pipe!" << std::endl);
+        ERR_STREAM(name() << " can't open in pipe!\n");
         exit(0);
     }
 
