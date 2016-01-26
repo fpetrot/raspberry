@@ -35,7 +35,7 @@ class raspberry_system_timer: public Slave
 public:
     SC_HAS_PROCESS (raspberry_system_timer);
     raspberry_system_timer(sc_core::sc_module_name module_name);
-    raspberry_system_timer(std::string name, ComponentParameters &params);
+    raspberry_system_timer(sc_core::sc_module_name name, ComponentParameters &params);
     virtual ~raspberry_system_timer();
 
 private:

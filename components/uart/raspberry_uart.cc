@@ -152,7 +152,7 @@ raspberry_uart::raspberry_uart(sc_module_name _name) :
     SC_THREAD(irq_update_thread);
 }
 
-raspberry_uart::raspberry_uart(std::string name, ComponentParameters &params) :
+raspberry_uart::raspberry_uart(sc_core::sc_module_name name, ComponentParameters &params) :
         Slave(name, params)
 {
     raspberry_uart_init_register();

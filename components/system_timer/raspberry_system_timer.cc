@@ -40,7 +40,7 @@ raspberry_system_timer::raspberry_system_timer(sc_module_name module_name) :
     SC_THREAD(irq_thread);
 }
 
-raspberry_system_timer::raspberry_system_timer(std::string name, ComponentParameters &params) :
+raspberry_system_timer::raspberry_system_timer(sc_core::sc_module_name name, ComponentParameters &params) :
         Slave(name, params)
 {
 

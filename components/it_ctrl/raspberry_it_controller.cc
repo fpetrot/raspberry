@@ -36,7 +36,7 @@ raspberry_it_controller::raspberry_it_controller(sc_module_name module_name,
     abort();
 }
 
-raspberry_it_controller::raspberry_it_controller(std::string name, ComponentParameters &params)
+raspberry_it_controller::raspberry_it_controller(sc_core::sc_module_name name, ComponentParameters &params)
     : Slave(name, params)
 {
 

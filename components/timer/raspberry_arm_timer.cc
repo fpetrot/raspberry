@@ -47,7 +47,7 @@ raspberry_arm_timer::raspberry_arm_timer(sc_module_name module_name) :
 
 }
 
-raspberry_arm_timer::raspberry_arm_timer(std::string name, ComponentParameters &params) :
+raspberry_arm_timer::raspberry_arm_timer(sc_core::sc_module_name name, ComponentParameters &params) :
         Slave(name, params)
 {
 

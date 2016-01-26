@@ -79,7 +79,7 @@ public:
     raspberry_it_controller(sc_core::sc_module_name module_name, int it_ports,
             sc_core::sc_signal<bool>* irq_wires, int* irq_wires_num, int it_ap_ports,
             sc_core::sc_signal<bool>* irq_ap_wires, int* irq_ap_wires_num);
-    raspberry_it_controller(std::string name, ComponentParameters &params);
+    raspberry_it_controller(sc_core::sc_module_name name, ComponentParameters &params);
     virtual ~raspberry_it_controller();
 
     //ports

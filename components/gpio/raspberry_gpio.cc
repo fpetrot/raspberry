@@ -32,7 +32,7 @@ raspberry_gpio::raspberry_gpio(sc_module_name module_name) :
     //SC_THREAD (gpio_thread);
 }
 
-raspberry_gpio::raspberry_gpio(std::string name, ComponentParameters &params) :
+raspberry_gpio::raspberry_gpio(sc_core::sc_module_name name, ComponentParameters &params) :
         Slave(name, params)
 {
 }

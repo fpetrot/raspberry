@@ -51,7 +51,7 @@ class raspberry_arm_timer: public Slave
 public:
     SC_HAS_PROCESS (raspberry_arm_timer);
     raspberry_arm_timer(sc_core::sc_module_name module_name);
-    raspberry_arm_timer(std::string name, ComponentParameters &params);
+    raspberry_arm_timer(sc_core::sc_module_name name, ComponentParameters &params);
     virtual ~raspberry_arm_timer();
 
 private:

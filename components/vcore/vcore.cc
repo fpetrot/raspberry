@@ -32,7 +32,7 @@ rpi_vcore::rpi_vcore(sc_module_name mod_name)
     m_fb.set_vcore(this);
 }
 
-rpi_vcore::rpi_vcore(std::string name, ComponentParameters &params)
+rpi_vcore::rpi_vcore(sc_core::sc_module_name name, ComponentParameters &params)
 	: Master(name, params)
 	, m_mbox("vcore_mailbox")
 	, m_fb("vcore_framebuffer")

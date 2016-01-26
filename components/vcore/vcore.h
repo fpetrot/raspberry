@@ -35,7 +35,7 @@ private:
 public:
     SC_HAS_PROCESS (rpi_vcore);
     rpi_vcore(sc_core::sc_module_name mod_name);
-    rpi_vcore(std::string name, ComponentParameters &params);
+    rpi_vcore(sc_core::sc_module_name name, ComponentParameters &params);
 
     virtual ~rpi_vcore() {}
 
