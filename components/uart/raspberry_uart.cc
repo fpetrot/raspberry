@@ -22,13 +22,8 @@
 #include <csignal>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/wait.h>
-#include "raspberry_uart.h"
-#include "rabbits/logger.h"
 
-#if 0
-#define DEBUG_DEVICE_TTY_SERIAL
-#endif
+#include "raspberry_uart.h"
 
 #include "rabbits/logger.h"
 
@@ -36,69 +31,9 @@
 
 using namespace sc_core;
 
-static int s_pid_tty[256];
-static int s_nb_tty = 0;
-
-static void close_ttys()
-{
-    int i, status;
-
-    if (s_nb_tty == 0)
-        return;
-
-    for (i = 0; i < s_nb_tty; i++) {
-        kill(s_pid_tty[i], SIGKILL);
-        ::wait(&status);
-    }
-
-    s_nb_tty = 0;
-}
-
-static void sig_hup(int)
-{
-    exit(1);
-}
 
 void raspberry_uart::read_thread()
 {
-    fd_set rfds;
-    int pos, ret, nfds;
-    uint8_t ch;
-    struct timeval tv;
-
-    nfds = pin + 1;
-
-    while (1) {
-        wait(10, SC_US);
-
-        if (state.uart_enabled && state.uart_rx_enable
-                && UART_MASK_RX(state.irq_mask)) {
-            tv.tv_sec = 0;
-            tv.tv_usec = 0;
-            FD_ZERO(&rfds);
-            FD_SET(pin, &rfds);
-            ret = select(nfds, &rfds, NULL, NULL, &tv);
-            if (ret > 0) {
-                if (FD_ISSET(pin, &rfds)) {
-                    ::read(pin, &ch, 1);
-                    DBG_PRINTF("%s read 0x%x, %c\n", __FUNCTION__,
-                            (unsigned int) ch, ch);
-
-                    while (state.read_count == READ_BUF_SIZE)
-                        wait(evRead);
-
-                    pos = (state.read_pos + state.read_count) % READ_BUF_SIZE;
-                    state.read_buf[pos] = ch;
-                    state.read_count++;
-
-                    /*Interrupt RX*/
-                    state.int_pending = 1;
-                    state.int_rx = 1;
-                    irq_update.notify();
-                }
-            }
-        }
-    }
 }
 
 void raspberry_uart::raspberry_uart_init_register(void)
@@ -109,44 +44,7 @@ void raspberry_uart::raspberry_uart_init_register(void)
 raspberry_uart::raspberry_uart(sc_module_name _name) :
         Slave(_name)
 {
-    int ppout[2], ppin[2];
-    char spipeout[16], spipein[16];
-    char logfile[strlen((const char *) _name) + 5];
-
     raspberry_uart_init_register();
-
-    signal(SIGHUP, sig_hup);
-    atexit(close_ttys);
-
-    signal(SIGPIPE, SIG_IGN);
-
-    if (pipe(ppout) < 0) {
-        ERR_STREAM(name() << " can't open out pipe!\n");
-        exit(0);
-    }
-    if (pipe(ppin) < 0) {
-        ERR_STREAM(name() << " can't open in pipe!\n");
-        exit(0);
-    }
-
-    pout = ppout[1];
-    sprintf(spipeout, "%d", ppout[0]);
-    pin = ppin[0];
-    sprintf(spipein, "%d", ppin[1]);
-
-    sprintf(logfile, "%s-log", (const char *) _name);
-
-    if (!(s_pid_tty[s_nb_tty++] = fork())) {
-        setpgrp();
-
-        if (execlp("xterm", "xterm", "-sb", "-sl", "1000", "-l", "-lf", logfile,
-                "-n", (const char *) _name, "-T", (const char *) _name, "-e",
-                "tty_term_rw", spipeout, spipein,
-                NULL) == -1) {
-            perror("tty_term: execlp failed!");
-            _exit(1);
-        }
-    }
 
     SC_THREAD(read_thread);
     SC_THREAD(irq_update_thread);
@@ -164,8 +62,6 @@ raspberry_uart::raspberry_uart(sc_core::sc_module_name name, ComponentParameters
 
 raspberry_uart::~raspberry_uart()
 {
-    close(pout);
-    close_ttys();
 }
 
 void raspberry_uart::irq_update_thread()
