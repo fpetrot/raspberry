@@ -24,7 +24,7 @@
 
 #include "rabbits/component/slave.h"
 
-class rpi_dma: public Slave
+class rpi_dma: public Slave<>
 {
 private:
     struct ctrl_blk

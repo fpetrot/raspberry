@@ -21,6 +21,7 @@
 #define _RASPBERRY_UART_H_
 
 #include <rabbits/component/slave.h>
+#include <rabbits/component/port/out.h>
 
 #define READ_BUF_SIZE           256
 
@@ -57,7 +58,7 @@
 #define UART_MASK_TX(reg)       ((reg >> 5) & 1)
 #define UART_MASK_RX(reg)       ((reg >> 4) & 1)
 
-typedef struct
+struct tty_state
 {
 
     unsigned long int_pending;
@@ -88,9 +89,9 @@ typedef struct
     int read_pos;
     int read_count;
     int read_trigger;
-} tty_state;
+};
 
-class raspberry_uart: public Slave
+class raspberry_uart : public Slave<>
 {
 public:
     SC_HAS_PROCESS (raspberry_uart);
@@ -113,7 +114,7 @@ private:
 
 public:
     //ports
-    sc_core::sc_out<bool> irq_line;
+    OutPort<bool> irq_line;
 
 private:
     sc_core::sc_event evRead;
@@ -124,16 +125,3 @@ private:
 };
 
 #endif
-
-/*
- * Vim standard variables
- * vim:set ts=4 expandtab tw=80 cindent syntax=c:
- *
- * Emacs standard variables
- * Local Variables:
- * mode: c
- * tab-width: 4
- * c-basic-offset: 4
- * indent-tabs-mode: nil
- * End:
- */

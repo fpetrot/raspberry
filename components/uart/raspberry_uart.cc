@@ -41,21 +41,12 @@ void raspberry_uart::raspberry_uart_init_register(void)
     memset(&state, 0, sizeof(state));
 }
 
-raspberry_uart::raspberry_uart(sc_module_name _name) :
-        Slave(_name)
+raspberry_uart::raspberry_uart(sc_core::sc_module_name name, ComponentParameters &params)
+    : Slave(name, params)
+    , irq_line("irq")
 {
     raspberry_uart_init_register();
 
-    SC_THREAD(read_thread);
-    SC_THREAD(irq_update_thread);
-}
-
-raspberry_uart::raspberry_uart(sc_core::sc_module_name name, ComponentParameters &params) :
-        Slave(name, params)
-{
-    raspberry_uart_init_register();
-
-    declare_irq_out("irq", irq_line);
     SC_THREAD(read_thread);
     SC_THREAD(irq_update_thread);
 }
@@ -76,7 +67,7 @@ void raspberry_uart::irq_update_thread()
 
         DBG_PRINTF("%s - %s\n", __FUNCTION__, (flags != 0) ? "1" : "0");
 
-        irq_line = (flags != 0);
+        irq_line.sc_p = (flags != 0);
     }
 }
 

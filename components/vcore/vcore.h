@@ -20,21 +20,23 @@
 #ifndef _RASPBERRY_VCORE_H_
 #define _RASPBERRY_VCORE_H_
 
-#include "rabbits/component/slave.h"
-#include "rabbits/component/master.h"
+#include <rabbits/component/slave.h>
+#include <rabbits/component/master.h>
+#include <rabbits/component/port/out.h>
 
 #include "mailbox.h"
 #include "fb.h"
 
-class rpi_vcore: public Master
+class rpi_vcore: public Master<>
 {
 private:
     vcore_mbox m_mbox;
     rpi_vcore_fb m_fb;
 
 public:
+    OutPort<bool> p_mailbox_irq;
+
     SC_HAS_PROCESS (rpi_vcore);
-    rpi_vcore(sc_core::sc_module_name mod_name);
     rpi_vcore(sc_core::sc_module_name name, ComponentParameters &params);
 
     virtual ~rpi_vcore() {}

@@ -20,7 +20,8 @@
 #ifndef _RASPBERRY_SYSTEM_TIMER_H_
 #define _RASPBERRY_SYSTEM_TIMER_H_
 
-#include "rabbits/component/slave.h"
+#include <rabbits/component/slave.h>
+#include <rabbits/component/port/out.h>
 
 #define TIMER_CS        0x0
 #define TIMER_CLO       0x4
@@ -30,11 +31,10 @@
 #define TIMER_CMP2      0x14
 #define TIMER_CMP3      0x18
 
-class raspberry_system_timer: public Slave
+class raspberry_system_timer: public Slave<>
 {
 public:
     SC_HAS_PROCESS (raspberry_system_timer);
-    raspberry_system_timer(sc_core::sc_module_name module_name);
     raspberry_system_timer(sc_core::sc_module_name name, ComponentParameters &params);
     virtual ~raspberry_system_timer();
 
@@ -48,7 +48,7 @@ private:
 
 public:
     //ports
-    sc_core::sc_out<bool> irq;
+    OutPort<bool> irq;
 
 private:
     static const sc_core::sc_time PERIOD;

@@ -22,7 +22,7 @@
 #include <algorithm>
 #include "raspberry_system_timer.h"
 
-#include "rabbits/logger.h"
+#include <rabbits/logger.h>
 
 #define TIMER_CLOCK_FV 1000000000
 
@@ -30,23 +30,12 @@ using namespace sc_core;
 
 const sc_time raspberry_system_timer::PERIOD = sc_time(100, SC_NS);
 
-raspberry_system_timer::raspberry_system_timer(sc_module_name module_name) :
-        Slave(module_name)
+raspberry_system_timer::raspberry_system_timer(sc_core::sc_module_name name, ComponentParameters &params)
+    : Slave(name, params)
+    , irq("irq")
 {
 
     clo = chi = cmp0 = cmp1 = cmp2 = cmp3 = 0;
-
-    SC_THREAD(timer_thread);
-    SC_THREAD(irq_thread);
-}
-
-raspberry_system_timer::raspberry_system_timer(sc_core::sc_module_name name, ComponentParameters &params) :
-        Slave(name, params)
-{
-
-    clo = chi = cmp0 = cmp1 = cmp2 = cmp3 = 0;
-
-    declare_irq_out("irq", irq);
 
     SC_THREAD(timer_thread);
     SC_THREAD(irq_thread);
@@ -62,12 +51,12 @@ void raspberry_system_timer::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool 
 
     DBG_PRINTF("write to ofs: 0x%x val: 0x%x\n", ofs, val1);
 
-    if (irq) {
+    if (irq.sc_p) {
         DBG_PRINTF("irq\n");
     }
     switch (ofs) {
     case TIMER_CS:
-        if (irq) {
+        if (irq.sc_p) {
             if (((val1 & 0x1)) && (cs & 0x1)) {
                 cs &= 0xFE;
                 DBG_PRINTF("event notify\n");
@@ -226,8 +215,8 @@ void raspberry_system_timer::timer_thread()
 void raspberry_system_timer::irq_thread()
 {
     for(;;) {
-        irq.write(cs != 0);
-        if(irq) {
+        irq.sc_p.write(cs != 0);
+        if(irq.sc_p) {
             DBG_PRINTF("irq\n");
         }
         wait(ev_irq_update);

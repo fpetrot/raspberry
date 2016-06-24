@@ -20,7 +20,11 @@
 #ifndef _raspberry_it_controller_H_
 #define _raspberry_it_controller_H_
 
-#include "rabbits/component/slave.h"
+#include <vector>
+
+#include <rabbits/component/slave.h>
+#include <rabbits/component/port/in.h>
+#include <rabbits/component/port/out.h>
 
 /* number of GPU input interrupt port */
 #define IT_CONT_PORT_NB 64
@@ -38,7 +42,7 @@
 #define IT_CONT_DISABLE_IRQ_2       0x20
 #define IT_CONT_DISABLE_BASIC_IRQ   0x24
 
-class raspberry_it_controller: public Slave
+class raspberry_it_controller: public Slave<>
 {
 public:
     /* Input irq lines : GPU1, GPU2 and CPU */
@@ -76,15 +80,12 @@ protected:
 
 public:
     SC_HAS_PROCESS (raspberry_it_controller);
-    raspberry_it_controller(sc_core::sc_module_name module_name, int it_ports,
-            sc_core::sc_signal<bool>* irq_wires, int* irq_wires_num, int it_ap_ports,
-            sc_core::sc_signal<bool>* irq_ap_wires, int* irq_ap_wires_num);
     raspberry_it_controller(sc_core::sc_module_name name, ComponentParameters &params);
     virtual ~raspberry_it_controller();
 
     //ports
-    sc_core::sc_out<bool> irq;
-    sc_core::sc_out<bool> fiq; /* n/i */
+    OutPort<bool> irq;
+    OutPort<bool> fiq; /* n/i */
 
 #if 0
     /* Variable number of input ports.
@@ -94,7 +95,7 @@ public:
     sc_core::sc_in<bool> *irq_ap_in;
 #endif
 
-    sc_core::sc_vector<sc_core::sc_in<bool> > irqs_in;
+    std::vector< InPort<bool>* > irqs_in;
 
 };
 

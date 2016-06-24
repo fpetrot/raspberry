@@ -23,14 +23,15 @@
 
 #include "raspberry_arm_timer.h"
 
-#include "rabbits/logger.h"
+#include <rabbits/logger.h>
 
 #define TIMER_DIV 10
 
 using namespace sc_core;
 
-raspberry_arm_timer::raspberry_arm_timer(sc_module_name module_name) :
-        Slave(module_name)
+raspberry_arm_timer::raspberry_arm_timer(sc_core::sc_module_name name, ComponentParameters &params)
+    : Slave(name, params)
+    , irq("irq")
 {
 
     m_period = 0;
@@ -41,26 +42,6 @@ raspberry_arm_timer::raspberry_arm_timer(sc_module_name module_name) :
     m_next_period = 0;
     m_irq = false;
     m_config_mod = false;
-
-    SC_THREAD(sl_timer_thread);
-    SC_THREAD(irq_update_thread);
-
-}
-
-raspberry_arm_timer::raspberry_arm_timer(sc_core::sc_module_name name, ComponentParameters &params) :
-        Slave(name, params)
-{
-
-    m_period = 0;
-    m_mode = 0;
-    m_value = 0;
-    m_ns_period = 0;
-    m_last_period = 0;
-    m_next_period = 0;
-    m_irq = false;
-    m_config_mod = false;
-
-    declare_irq_out("irq", irq);
 
     SC_THREAD(sl_timer_thread);
     SC_THREAD(irq_update_thread);
@@ -198,7 +179,7 @@ void raspberry_arm_timer::irq_update_thread()
 
         wait(ev_irq_update);
 
-        irq = (m_irq == 1);
+        irq.sc_p = (m_irq == 1);
     }
 }
 

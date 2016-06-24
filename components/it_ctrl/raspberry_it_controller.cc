@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
+#include <sstream>
 
 #include "raspberry_it_controller.h"
 
@@ -28,26 +29,22 @@
 using namespace sc_core;
 
 
-raspberry_it_controller::raspberry_it_controller(sc_module_name module_name,
-        int it_ports, sc_signal<bool>* irq_wires, int* irq_wires_num,
-        int it_ap_ports, sc_signal<bool>* irq_ap_wires, int* irq_ap_wires_num) :
-        Slave(module_name)
-{
-    abort();
-}
-
 raspberry_it_controller::raspberry_it_controller(sc_core::sc_module_name name, ComponentParameters &params)
     : Slave(name, params)
+    , irq("irq")
+    , fiq("fiq")
 {
 
-    irqs_in.init(IRQ_NUM);
-    declare_vector_irq_in("", irqs_in);
+    for (int i = 0; i < IRQ_NUM; i++) {
+        std::stringstream ss;
+        ss << i;
+        irqs_in.push_back(new InPort<bool>(ss.str()));
+    }
+
+    //irqs_in.init(IRQ_NUM);
+    //declare_vector_irq_in("", irqs_in);
 
     m_event_list |= ev_refresh;
-
-    /* ARM irq lines */
-    declare_irq_out("irq", irq);
-    declare_irq_out("fiq", fiq);
 
     reset_registers();
     SC_THREAD(it_thread);
@@ -60,8 +57,8 @@ void raspberry_it_controller::end_of_elaboration()
     Slave::end_of_elaboration();
 
     /* Event list */
-    for (it = irqs_in.begin(); it != irqs_in.end(); it++) {
-        m_event_list |= it->value_changed_event();
+    for (auto p : irqs_in) {
+        m_event_list |= p->sc_p.value_changed_event();
     }
 
 }
@@ -257,27 +254,28 @@ void raspberry_it_controller::bus_cb_read_32(uint64_t ofs, uint32_t *data, bool 
 void raspberry_it_controller::it_thread()
 {
     bool irq_pending;
-    sc_vector<sc_in<bool> >::iterator it;
-    int i;
+    int i = 0;
 
     for (;;) {
         wait(m_event_list);
 
         irq_pending = false;
 
-        for (it = irqs_in.begin(), i = 0; it != irqs_in.end(); it++, i++) {
-            if (it->posedge() && m_irq_enabled[i]) {
+        for (auto p : irqs_in) {
+            sc_in<bool> &sc_p = p->sc_p;
+            if (sc_p->posedge() && m_irq_enabled[i]) {
                 irq_pending = m_irq_pending[i] = true;
-            } else if(it->negedge()) {
+            } else if(sc_p->negedge()) {
                 m_irq_pending[i] = false;
             }
+            i++;
         }
 
         if (irq_pending) {
-            irq = true;
+            irq.sc_p = true;
             DBG_PRINTF("Rising IRQ on CPU\n");
         } else {
-            irq = false;
+            irq.sc_p = false;
         }
     }
 }

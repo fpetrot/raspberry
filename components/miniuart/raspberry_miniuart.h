@@ -84,7 +84,7 @@ typedef struct
     int read_trigger;
 } tty_state;
 
-class raspberry_miniuart: public Slave
+class raspberry_miniuart: public Slave<>
 {
 public:
     SC_HAS_PROCESS (raspberry_miniuart);

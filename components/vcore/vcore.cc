@@ -23,25 +23,18 @@
 
 using namespace sc_core;
 
-rpi_vcore::rpi_vcore(sc_module_name mod_name)
-	: Master(mod_name)
-	, m_mbox("vcore_mailbox")
-	, m_fb("vcore_framebuffer")
-{
-    m_mbox.set_vcore(this);
-    m_fb.set_vcore(this);
-}
-
 rpi_vcore::rpi_vcore(sc_core::sc_module_name name, ComponentParameters &params)
 	: Master(name, params)
 	, m_mbox("vcore_mailbox")
 	, m_fb("vcore_framebuffer")
+    , p_mailbox_irq("mailbox-irq")
 {
     m_mbox.set_vcore(this);
     m_fb.set_vcore(this);
 
-    declare_slave("mailbox", m_mbox);
-    declare_irq_out("mailbox-irq", m_mbox.irq_line);
+    // XXX
+    //declare_slave("mailbox", m_mbox);
+    p_mailbox_irq.sc_p(m_mbox.irq_line);
 }
 
 uint32_t rpi_vcore::vcore_to_arm_addr(uint32_t addr)

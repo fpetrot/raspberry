@@ -20,7 +20,8 @@
 #ifndef _raspberry_arm_timer_H_
 #define _raspberry_arm_timer_H_
 
-#include "rabbits/component/slave.h"
+#include <rabbits/component/slave.h>
+#include <rabbits/component/port/out.h>
 
 #define ARM_TIMER_LOAD          0x00
 #define ARM_TIMER_VALUE         0x04
@@ -46,11 +47,10 @@ enum sl_timer_mode
     TIMER_RUNNING = 1, TIMER_IRQ_ENABLED = 2,
 };
 
-class raspberry_arm_timer: public Slave
+class raspberry_arm_timer: public Slave<>
 {
 public:
     SC_HAS_PROCESS (raspberry_arm_timer);
-    raspberry_arm_timer(sc_core::sc_module_name module_name);
     raspberry_arm_timer(sc_core::sc_module_name name, ComponentParameters &params);
     virtual ~raspberry_arm_timer();
 
@@ -65,7 +65,7 @@ private:
 
 public:
     //ports
-    sc_core::sc_out<bool> irq;
+    OutPort<bool> irq;
 
 private:
     uint32_t m_period;
@@ -97,16 +97,3 @@ private:
 };
 
 #endif
-
-/*
- * Vim standard variables
- * vim:set ts=4 expandtab tw=80 cindent syntax=c:
- *
- * Emacs standard variables
- * Local Variables:
- * mode: c
- * tab-width: 4
- * c-basic-offset: 4
- * indent-tabs-mode: nil
- * End:
- */

@@ -52,7 +52,7 @@
 #define GPPUDCLK0 0x98
 #define GPPUDCLK1 0x9C
 
-class raspberry_gpio: public Slave
+class raspberry_gpio: public Slave<>
 {
 public:
     SC_HAS_PROCESS (raspberry_gpio);

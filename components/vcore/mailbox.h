@@ -33,7 +33,7 @@
 
 class rpi_vcore;
 
-class vcore_mbox: public Slave
+class vcore_mbox: public Slave<>
 {
 private:
     sc_core::sc_event irq_update;
