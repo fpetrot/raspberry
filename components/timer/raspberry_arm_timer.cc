@@ -59,7 +59,7 @@ void raspberry_arm_timer::bus_cb_write(uint64_t ofs, uint8_t *data,
     uint32_t temp = 0;
 
     value = *((uint32_t *) data + 0);
-    DBG_PRINTF("write to ofs: 0x%x val: 0x%x\n", ofs, value);
+    MLOG_F(SIM, DBG, "write to ofs: 0x%x val: 0x%x\n", ofs, value);
     switch (ofs) {
     case ARM_TIMER_LOAD:
         m_load = value;
@@ -67,7 +67,7 @@ void raspberry_arm_timer::bus_cb_write(uint64_t ofs, uint8_t *data,
         break;
 
     case ARM_TIMER_CTRL:
-        DBG_PRINTF("ARM_TIME_CTRL: %x\n", value);
+        MLOG_F(SIM, DBG, "ARM_TIME_CTRL: %x\n", value);
         m_freecounter_on = value & (1 << 9);
         m_enable_in_debug = value & (1 << 8);
         m_timer_on = value & (1 << 7);
@@ -103,12 +103,12 @@ void raspberry_arm_timer::bus_cb_write(uint64_t ofs, uint8_t *data,
         break;
 
     default:
-        DBG_PRINTF("Bad %s::%s ofs=0x%X, data=0x%X-%X!\n", name (),
+        MLOG_F(SIM, DBG, "Bad %s::%s ofs=0x%X, data=0x%X-%X!\n", name (),
                 __FUNCTION__, (unsigned int) ofs,
                 (unsigned int) *((uint32_t*)data + 0),
                 (unsigned int) *((uint32_t*)data + 1));
-        exit(1);
-        break;
+        bErr = true;
+        return;
     }
     bErr = false;
 }
@@ -166,9 +166,10 @@ void raspberry_arm_timer::bus_cb_read(uint64_t ofs, uint8_t *data, unsigned int 
         break;
 
     default:
-        printf("Bad %s::%s ofs=0x%X!\n", name(), __FUNCTION__,
+        MLOG_F(SIM, ERR, "Bad %s::%s ofs=0x%X!\n", name(), __FUNCTION__,
                 (unsigned int) ofs);
-        exit(1);
+        bErr = true;
+        return;
     }
     bErr = false;
 }
@@ -196,23 +197,10 @@ void raspberry_arm_timer::sl_timer_thread(void)
                 m_freecounter = 0;
                 ev_irq_update.notify();
             }
-            DBG_PRINTF("Waiting %" PRIu32 " ns\n", wait_time);
+            MLOG_F(SIM, DBG, "Waiting %" PRIu32 " ns\n", wait_time);
             wait(wait_time, SC_NS);
         } else {
             wait(ev_wake);
         }
     }
 }
-
-/*
- * Vim standard variables
- * vim:set ts=4 expandtab tw=80 cindent syntax=c:
- *
- * Emacs standard variables
- * Local Variables:
- * mode: c
- * tab-width: 4
- * c-basic-offset: 4
- * indent-tabs-mode: nil
- * End:
- */

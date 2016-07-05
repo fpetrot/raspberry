@@ -65,14 +65,14 @@ void raspberry_uart::irq_update_thread()
 
         flags = (state.int_rx || state.int_tx) & state.int_pending;
 
-        DBG_PRINTF("%s - %s\n", __FUNCTION__, (flags != 0) ? "1" : "0");
+        MLOG_F(SIM, DBG, "%s - %s\n", __FUNCTION__, (flags != 0) ? "1" : "0");
 
         irq_line.sc_p = (flags != 0);
     }
 }
 
 void raspberry_uart::bus_cb_write(uint64_t ofs, uint8_t *data,
-			    unsigned int len, bool &bErr)
+                                  unsigned int len, bool &bErr)
 {
     uint8_t ch;
     uint32_t value;
@@ -86,7 +86,7 @@ void raspberry_uart::bus_cb_write(uint64_t ofs, uint8_t *data,
 #if 0
     if (ofs != 0)
 #endif
-    DBG_PRINTF("%s to 0x%lx - value 0x%lx\n", __FUNCTION__, (unsigned long) ofs,
+    MLOG_F(SIM, DBG, "%s to 0x%lx - value 0x%lx\n", __FUNCTION__, (unsigned long) ofs,
             (unsigned long) value);
 
     switch (ofs) {
@@ -202,16 +202,16 @@ void raspberry_uart::bus_cb_write(uint64_t ofs, uint8_t *data,
         break;
 
     default:
-        fprintf(stderr, "%s - Error: ofs=0x%X, data=0x%X-%X!\n",
+        MLOG_F(SIM, ERR, "%s - Error: ofs=0x%X, data=0x%X-%X!\n",
                 __PRETTY_FUNCTION__, (unsigned int) ofs,
                 (unsigned int) *((uint32_t *) data + 0),
                 (unsigned int) *((uint32_t *) data + 1));
-        exit(1);
+        bErr = true;
     }
 }
 
 void raspberry_uart::bus_cb_read(uint64_t ofs, uint8_t *data,
-			    unsigned int len, bool &bErr)
+                                 unsigned int len, bool &bErr)
 {
     uint32_t c, *pdata;
 
@@ -219,7 +219,7 @@ void raspberry_uart::bus_cb_read(uint64_t ofs, uint8_t *data,
     bErr = false;
 
     ofs >>= 2;
-    DBG_PRINTF("%s to 0x%lx\n", __FUNCTION__, (unsigned long) ofs);
+    MLOG_F(SIM, DBG, "%s to 0x%lx\n", __FUNCTION__, (unsigned long) ofs);
 
     switch (ofs) {
     case UART_DR:
@@ -355,22 +355,9 @@ void raspberry_uart::bus_cb_read(uint64_t ofs, uint8_t *data,
         break;
 
     default:
-        fprintf(stderr, "%s - Error: ofs=0x%X!\n", __PRETTY_FUNCTION__,
+        MLOG_F(SIM, ERR, "%s - Error: ofs=0x%X!\n", __PRETTY_FUNCTION__,
                 (unsigned int) ofs);
 
-        exit(1);
+        bErr = true;
     }
 }
-
-/*
- * Vim standard variables
- * vim:set ts=4 expandtab tw=80 cindent syntax=c:
- *
- * Emacs standard variables
- * Local Variables:
- * mode: c
- * tab-width: 4
- * c-basic-offset: 4
- * indent-tabs-mode: nil
- * End:
- */

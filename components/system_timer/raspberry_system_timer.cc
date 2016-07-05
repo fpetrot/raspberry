@@ -49,32 +49,32 @@ void raspberry_system_timer::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool 
 {
     uint32_t val1 = *data;
 
-    DBG_PRINTF("write to ofs: 0x%x val: 0x%x\n", ofs, val1);
+    MLOG_F(SIM, DBG, "write to ofs: 0x%x val: 0x%x\n", ofs, val1);
 
     if (irq.sc_p) {
-        DBG_PRINTF("irq\n");
+        MLOG_F(SIM, DBG, "irq\n");
     }
     switch (ofs) {
     case TIMER_CS:
         if (irq.sc_p) {
             if (((val1 & 0x1)) && (cs & 0x1)) {
                 cs &= 0xFE;
-                DBG_PRINTF("event notify\n");
+                MLOG_F(SIM, DBG, "event notify\n");
                 ev_irq_update.notify();
             }
             if (((val1 & 0x2) >> 1) && ((cs & 0x2) >> 1)) {
                 cs &= 0xFD;
-                DBG_PRINTF("event notify\n");
+                MLOG_F(SIM, DBG, "event notify\n");
                 ev_irq_update.notify();
             }
             if (((val1 & 0x4) >> 2) && ((cs & 0x4) >> 2)) {
                 cs &= 0xFB;
-                DBG_PRINTF("event notify\n");
+                MLOG_F(SIM, DBG, "event notify\n");
                 ev_irq_update.notify();
             }
             if (((val1 & 0x8) >> 3) && ((cs & 0x8) >> 3)) {
                 cs &= 0xF7;
-                DBG_PRINTF("event notify\n");
+                MLOG_F(SIM, DBG, "event notify\n");
                 ev_irq_update.notify();
             }
             break;
@@ -103,12 +103,12 @@ void raspberry_system_timer::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool 
         break;
 
     default:
-        ERR_PRINTF("Bad %s::%s ofs=0x%X, data=0x%X-%X!\n", name(),
+        MLOG_F(SIM, ERR, "Bad %s::%s ofs=0x%X, data=0x%X-%X!\n", name(),
                 __FUNCTION__, (unsigned int) ofs,
                 (unsigned int) *((uint32_t *) data + 0),
                 (unsigned int) *((uint32_t *) data + 1));
-        exit(1);
-        break;
+        bErr = true;
+        return;
     }
     bErr = false;
 }
@@ -147,12 +147,14 @@ void raspberry_system_timer::bus_cb_read_32(uint64_t ofs, uint32_t *data, bool &
         *data = cmp3;
         break;
     default:
-        ERR_PRINTF("Bad %s::%s ofs=0x%X!\n", name(), __FUNCTION__,
+        MLOG_F(SIM, ERR, "Bad %s::%s ofs=0x%X!\n", name(), __FUNCTION__,
                 (unsigned int) ofs);
-        exit(1);
+        bErr = true;
+        return;
     }
+
     bErr = false;
-    DBG_PRINTF("read to ofs: 0x%x, val:%" PRIx32 "\n", ofs, *data);
+    MLOG_F(SIM, DBG, "read to ofs: 0x%x, val:%" PRIx32 "\n", ofs, *data);
 }
 
 sc_time raspberry_system_timer::compute_next_deadline() const
@@ -163,7 +165,7 @@ sc_time raspberry_system_timer::compute_next_deadline() const
     next_deadline = static_cast<double>(std::min(std::min(cmp0-clo, cmp1-clo),
                                                  std::min(cmp2-clo, cmp3-clo)));
 
-    DBG_PRINTF("Next deadline is %f\n", next_deadline);
+    MLOG_F(SIM, DBG, "Next deadline is %f\n", next_deadline);
     return next_deadline * PERIOD;
 }
 
@@ -189,7 +191,7 @@ void raspberry_system_timer::timer_thread()
         }
         clo += elapsed;
 
-        DBG_PRINTF("clo: %" PRIx32 ", cmp3: %" PRIx32 "\n", clo, cmp3);
+        MLOG_F(SIM, DBG, "clo: %" PRIx32 ", cmp3: %" PRIx32 "\n", clo, cmp3);
 
         if (clo != 0) {
             if (clo == cmp0) {
@@ -217,7 +219,7 @@ void raspberry_system_timer::irq_thread()
     for(;;) {
         irq.sc_p.write(cs != 0);
         if(irq.sc_p) {
-            DBG_PRINTF("irq\n");
+            MLOG_F(SIM, DBG, "irq\n");
         }
         wait(ev_irq_update);
     }

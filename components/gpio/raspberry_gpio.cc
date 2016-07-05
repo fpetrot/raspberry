@@ -76,12 +76,12 @@ void raspberry_gpio::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool &bErr)
         break;
 
     default:
-        printf("Bad %s::%s ofs=0x%X, data=0x%X-%X!\n", name(),
+        MLOG_F(SIM, ERR, "Bad %s::%s ofs=0x%X, data=0x%X-%X!\n", name(),
                 __FUNCTION__, (unsigned int) ofs,
                 (unsigned int) *((uint32_t *) data + 0),
                 (unsigned int) *((uint32_t *) data + 1));
-        exit(1);
-        break;
+        bErr = true;
+        return;
     }
     bErr = false;
 }
@@ -122,9 +122,10 @@ void raspberry_gpio::bus_cb_read_32(uint64_t ofs, uint32_t *data , bool &bErr)
         break;
 
     default:
-        printf("Bad %s::%s ofs=0x%X!\n", name(), __FUNCTION__,
-                (unsigned int) ofs);
-        exit(1);
+        MLOG_F(SIM, ERR, "Bad %s::%s ofs=0x%X!\n", name(), __FUNCTION__,
+               (unsigned int) ofs);
+        bErr = true;
+        return;
     }
     bErr = false;
 }

@@ -119,11 +119,11 @@ raspberry_miniuart::raspberry_miniuart(sc_module_name _name) :
     signal(SIGPIPE, SIG_IGN);
 
     if (pipe(ppout) < 0) {
-        ERR_STREAM(name() << " can't open out pipe!\n");
+        LOG(APP, ERR) << name() << " can't open out pipe!\n";
         exit(0);
     }
     if (pipe(ppin) < 0) {
-        ERR_STREAM(name() << " can't open in pipe!\n");
+        LOG(APP, ERR) << name() << " can't open in pipe!\n";
         exit(0);
     }
 
@@ -167,7 +167,7 @@ void raspberry_miniuart::irq_update_thread()
 
         flags = state.int_level & state.int_pending;
 
-        DBG_PRINTF("%s - %s\n", __FUNCTION__, (flags != 0) ? "1" : "0");
+        MLOG_F(SIM, DBG, "%s - %s\n", __FUNCTION__, (flags != 0) ? "1" : "0");
 
         irq_line = (flags != 0);
     }
@@ -193,7 +193,7 @@ void raspberry_miniuart::cb_write(uint32_t ofs, uint8_t be, uint8_t *data,
 #if 0
     if (ofs != 0)
 #endif
-    DBG_PRINTF("%s to 0x%lx - value 0x%lx\n", __FUNCTION__, (unsigned long) ofs,
+    MLOG_F(SIM, DBG, "%s to 0x%lx - value 0x%lx\n", __FUNCTION__, (unsigned long) ofs,
             (unsigned long) value);
 
     switch (ofs) {
@@ -258,11 +258,12 @@ void raspberry_miniuart::cb_write(uint32_t ofs, uint8_t be, uint8_t *data,
         break;
 
     default:
-        fprintf(stderr, "%s - Error: ofs=0x%X, be=0x%X, data=0x%X-%X!\n",
+        MLOG_F(SIM, ERR, "%s - Error: ofs=0x%X, be=0x%X, data=0x%X-%X!\n",
                 __PRETTY_FUNCTION__, (unsigned int) ofs, (unsigned int) be,
                 (unsigned int) *((uint32_t *) data + 0),
                 (unsigned int) *((uint32_t *) data + 1));
-        exit(1);
+        bErr = true;
+        return;
     }
 }
 
@@ -271,7 +272,7 @@ void raspberry_miniuart::cb_read(uint32_t ofs, uint8_t be, uint8_t *data,
 {
     uint32_t c, temp_out, *pdata;
 
-    DBG_PRINTF("%s to 0x%lx\n", __FUNCTION__, (unsigned long) ofs);
+    MLOG_F(SIM, DBG, "%s to 0x%lx\n", __FUNCTION__, (unsigned long) ofs);
     pdata = (uint32_t *) data;
     pdata[0] = 0;
     pdata[1] = 0;
@@ -354,7 +355,7 @@ void raspberry_miniuart::cb_read(uint32_t ofs, uint8_t be, uint8_t *data,
 
     case AUX_MU_SCRATCH:
         *pdata = state.uart_scratch;
-        DBG_PRINTF("--->0x%lx\n", (unsigned long) *pdata);
+        MLOG_F(SIM, DBG, "--->0x%lx\n", (unsigned long) *pdata);
         break;
 
     case AUX_MU_CNTL_REG:
@@ -363,7 +364,7 @@ void raspberry_miniuart::cb_read(uint32_t ofs, uint8_t be, uint8_t *data,
                 | state.uart_cts_autoflow << 3 | state.uart_rts_autoflow << 2
                 | state.uart_tx_enable << 1 | state.uart_rx_enable;
         *pdata = temp_out;
-        DBG_PRINTF("--->0x%lx\n", (unsigned long) *pdata);
+        MLOG_F(SIM, DBG, "--->0x%lx\n", (unsigned long) *pdata);
         break;
 
     case AUX_MU_STAT_REG:
@@ -382,25 +383,13 @@ void raspberry_miniuart::cb_read(uint32_t ofs, uint8_t be, uint8_t *data,
 
     case AUX_MU_BAUD_REG:
         *pdata = state.baudrate;
-        DBG_PRINTF("--->0x%lx\n", (unsigned long) *pdata);
+        MLOG_F(SIM, DBG, "--->0x%lx\n", (unsigned long) *pdata);
         break;
 
     default:
-        fprintf(stderr, "%s - Error: ofs=0x%X, be=0x%X!\n", __PRETTY_FUNCTION__,
+        MLOG_F(SIM, ERR, "%s - Error: ofs=0x%X, be=0x%X!\n", __PRETTY_FUNCTION__,
                 (unsigned int) ofs, (unsigned int) be);
-        exit(1);
+        bErr = true;
+        return;
     }
 }
-
-/*
- * Vim standard variables
- * vim:set ts=4 expandtab tw=80 cindent syntax=c:
- *
- * Emacs standard variables
- * Local Variables:
- * mode: c
- * tab-width: 4
- * c-basic-offset: 4
- * indent-tabs-mode: nil
- * End:
- */

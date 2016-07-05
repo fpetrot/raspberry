@@ -37,14 +37,14 @@ void rpi_vcore_fb::set_info(const rpi_fb_info & info)
 {
     ui_fb_info ui_info;
 
-    DBG_PRINTF("setting info\n");
-    DBG_PRINTF("pw: %" PRIu32 "\n", info.physical_w);
-    DBG_PRINTF("ph: %" PRIu32 "\n", info.physical_h);
-    DBG_PRINTF("vw: %" PRIu32 "\n", info.virtual_w);
-    DBG_PRINTF("vh: %" PRIu32 "\n", info.virtual_h);
-    DBG_PRINTF("bpp: %" PRIu32 "\n", info.bpp);
-    DBG_PRINTF("x offset: %" PRIu32 "\n", info.x_offset);
-    DBG_PRINTF("y offset: %" PRIu32 "\n", info.y_offset);
+    LOG_F(SIM, DBG, "setting info\n");
+    LOG_F(SIM, DBG, "pw: %" PRIu32 "\n", info.physical_w);
+    LOG_F(SIM, DBG, "ph: %" PRIu32 "\n", info.physical_h);
+    LOG_F(SIM, DBG, "vw: %" PRIu32 "\n", info.virtual_w);
+    LOG_F(SIM, DBG, "vh: %" PRIu32 "\n", info.virtual_h);
+    LOG_F(SIM, DBG, "bpp: %" PRIu32 "\n", info.bpp);
+    LOG_F(SIM, DBG, "x offset: %" PRIu32 "\n", info.x_offset);
+    LOG_F(SIM, DBG, "y offset: %" PRIu32 "\n", info.y_offset);
 
     m_info = info;
 
@@ -68,7 +68,7 @@ void rpi_vcore_fb::set_info(const rpi_fb_info & info)
         break;
 
     default:
-        ERR_PRINTF("Unable to setup framebuffer: unsupported mode\n");
+        LOG_F(SIM, ERR, "Unable to setup framebuffer: unsupported mode\n");
         goto setup_err;
     }
 
@@ -81,7 +81,7 @@ void rpi_vcore_fb::set_info(const rpi_fb_info & info)
     m_fb_state = FB_RUNNING;
     return;
 
-setup_err: 
+setup_err:
     return;
 }
 

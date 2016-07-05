@@ -72,7 +72,7 @@ void raspberry_it_controller::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool
     uint32_t val1 = *data;
     bool refresh = false;
 
-    DBG_PRINTF("write addr = 0x%" PRIx64 ", val = 0x%" PRIx32 " \n", ofs, val1);
+    MLOG_F(SIM, DBG, "write addr = 0x%" PRIx64 ", val = 0x%" PRIx32 " \n", ofs, val1);
     switch (ofs) {
     case IT_CONT_ENABLE_IRQ_1:
         for (int i = 0; i < 32; i++) {
@@ -81,7 +81,7 @@ void raspberry_it_controller::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool
                 refresh = true;
             }
         }
-        DBG_PRINTF("ENABLE_IRQ_1 = %" PRIx32 " \n", val1);
+        MLOG_F(SIM, DBG, "ENABLE_IRQ_1 = %" PRIx32 " \n", val1);
         break;
 
     case IT_CONT_ENABLE_IRQ_2:
@@ -91,7 +91,7 @@ void raspberry_it_controller::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool
                 refresh = true;
             }
         }
-        DBG_PRINTF("ENABLE_IRQ_2 = %" PRIx32 " \n", val1);
+        MLOG_F(SIM, DBG, "ENABLE_IRQ_2 = %" PRIx32 " \n", val1);
         break;
 
     case IT_CONT_ENABLE_BASIC_IRQ:
@@ -100,7 +100,7 @@ void raspberry_it_controller::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool
                 m_irq_enabled[i+64] = true;
                 refresh = true;
             }
-            DBG_PRINTF("ENABLE_BASIC_IRQ = %" PRIx32 " \n", val1);
+            MLOG_F(SIM, DBG, "ENABLE_BASIC_IRQ = %" PRIx32 " \n", val1);
         }
         break;
 
@@ -132,12 +132,12 @@ void raspberry_it_controller::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool
         break;
 
     default:
-        printf("Bad %s::%s ofs=0x%" PRIx64 " , data=0x%" PRIx32 " -%" PRIx32 " !\n", name(),
+        MLOG_F(SIM, ERR, "Bad %s::%s ofs=0x%" PRIx64 " , data=0x%" PRIx32 " -%" PRIx32 " !\n", name(),
                 __FUNCTION__, ofs,
                 *((uint32_t *) data + 0),
                 *((uint32_t *) data + 1));
-        exit(1);
-        break;
+        bErr = true;
+        return;
     }
     if (refresh) {
         ev_refresh.notify();
@@ -150,7 +150,7 @@ void raspberry_it_controller::bus_cb_read_32(uint64_t ofs, uint32_t *data, bool 
     uint32_t out = 0;
     uint32_t pending_in_r2, pending_in_r1;
 
-    DBG_PRINTF("read addr = 0x%" PRIx64 " \n", ofs);
+    MLOG_F(SIM, DBG, "read addr = 0x%" PRIx64 " \n", ofs);
 
     switch (ofs) {
     case IT_CONT_ENABLE_IRQ_1:
@@ -222,7 +222,7 @@ void raspberry_it_controller::bus_cb_read_32(uint64_t ofs, uint32_t *data, bool 
             out |= m_irq_pending[i+64] << i;
         }
 
-        DBG_PRINTF("BASIC_PENDING: %" PRIx32 " \n", out);
+        MLOG_F(SIM, DBG, "BASIC_PENDING: %" PRIx32 " \n", out);
         *data = out;
 
         break;
@@ -231,7 +231,7 @@ void raspberry_it_controller::bus_cb_read_32(uint64_t ofs, uint32_t *data, bool 
         for (int i = 0; i < 32; i++) {
             out |= (int(m_irq_pending[i]) << i);
         }
-        DBG_PRINTF("IRQ_PENDING_1: 0x%" PRIx32 " \n", out);
+        MLOG_F(SIM, DBG, "IRQ_PENDING_1: 0x%" PRIx32 " \n", out);
         *data = out;
         break;
 
@@ -239,14 +239,14 @@ void raspberry_it_controller::bus_cb_read_32(uint64_t ofs, uint32_t *data, bool 
         for (int i = 0; i < 32; i++) {
             out |= (int(m_irq_pending[i+32]) << i);
         }
-        DBG_PRINTF("IRQ_PENDING_2: 0x%" PRIx32 " \n", out);
+        MLOG_F(SIM, DBG, "IRQ_PENDING_2: 0x%" PRIx32 " \n", out);
         *data = out;
         break;
 
     default:
-        printf("Bad %s::%s ofs=0x%" PRIx64 " !\n", name(), __FUNCTION__, ofs);
-        exit(1);
-        break;
+        MLOG_F(SIM, ERR, "Bad %s::%s ofs=0x%" PRIx64 " !\n", name(), __FUNCTION__, ofs);
+        bErr = true;
+        return;
     }
     bErr = false;
 }
@@ -273,7 +273,7 @@ void raspberry_it_controller::it_thread()
 
         if (irq_pending) {
             irq.sc_p = true;
-            DBG_PRINTF("Rising IRQ on CPU\n");
+            MLOG_F(SIM, DBG, "Rising IRQ on CPU\n");
         } else {
             irq.sc_p = false;
         }

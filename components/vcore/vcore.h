@@ -54,7 +54,7 @@ public:
             sc_core::sc_time read_latency, sc_core::sc_time write_latency)
     {
         if(start == 0) {
-            DBG_PRINTF("found memory backdoor, addr=%p\n", data);
+            MLOG_F(APP, DBG, "found memory backdoor, addr=%p\n", data);
             m_fb.mem_backdoor = data;
         }
     }

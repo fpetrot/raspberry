@@ -50,27 +50,27 @@ static void dump_property_buffer(uint32_t addr, uint8_t *mem)
     uint32_t v_size;
     int i = 0;
 
-    printf("Dumping buffer at %08" PRIx32 "\n", addr);
-    printf("Buffer size: %" PRIu32 " bytes\n", buffer_size);
-    printf("Buffer req/rsp code: %08" PRIx32 "\n", req_code);
+    LOG_F(SIM, DBG, "Dumping buffer at %08" PRIx32 "\n", addr);
+    LOG_F(SIM, DBG, "Buffer size: %" PRIu32 " bytes\n", buffer_size);
+    LOG_F(SIM, DBG, "Buffer req/rsp code: %08" PRIx32 "\n", req_code);
 
     tag = *(uint32_t*) mem;
     mem += 4;
     buffer_size -= 4;
     while (tag && buffer_size) {
-        printf("=== Tag %d\n", i);
+        LOG_F(SIM, DBG, "=== Tag %d\n", i);
 
-        printf("id: %08" PRIx32 "\n", tag);
-
-        v_size = *(uint32_t*) mem;
-        mem += 4;
-        buffer_size -= 4;
-        printf("size: %" PRIu32 "\n", v_size);
+        LOG_F(SIM, DBG, "id: %08" PRIx32 "\n", tag);
 
         v_size = *(uint32_t*) mem;
         mem += 4;
         buffer_size -= 4;
-        printf("??: %" PRIu32 "\n", v_size);
+        LOG_F(SIM, DBG, "size: %" PRIu32 "\n", v_size);
+
+        v_size = *(uint32_t*) mem;
+        mem += 4;
+        buffer_size -= 4;
+        LOG_F(SIM, DBG, "??: %" PRIu32 "\n", v_size);
 
         mem += v_size;
         buffer_size -= v_size;
@@ -124,7 +124,7 @@ void vcore_mbox::bus_cb_write(uint64_t ofs, uint8_t *data,
     uint32_t buffer_addr;
     uint32_t channel;
 
-    DBG_PRINTF("%s to 0x%lx - value 0x%lx\n", __FUNCTION__,
+    MLOG_F(SIM, DBG, "%s to 0x%lx - value 0x%lx\n", __FUNCTION__,
             (unsigned long) ofs, (unsigned long) *d);
     switch (ofs) {
     case MAIL0_READ:
@@ -143,30 +143,30 @@ void vcore_mbox::bus_cb_write(uint64_t ofs, uint8_t *data,
         switch (channel) {
         case 1:
             /* Framebuffer */
-            DBG_PRINTF("Framebuffer channel\n");
+            MLOG_F(SIM, DBG, "Framebuffer channel\n");
             handle_fb_req(buffer_addr);
             _mfifo.push(0 | channel);
             break;
 
         case 8:
-            ERR_PRINTF("n/i msg on channel %" PRIu32 "\n", channel);
+            MLOG_F(SIM, ERR, "n/i msg on channel %" PRIu32 "\n", channel);
             _mfifo.push(*d);
             break;
 
         default:
-            ERR_PRINTF("n/i msg on channel %" PRIu32 "\n", channel);
+            MLOG_F(SIM, ERR, "n/i msg on channel %" PRIu32 "\n", channel);
             _mfifo.push(0 | channel);
             break;
         }
         break;
 
     default:
-        printf("Bad %s::%s ofs=0x%X, data=0x%X-%X!\n", name(),
+        MLOG_F(SIM, ERR, "Bad %s::%s ofs=0x%X, data=0x%X-%X!\n", name(),
                 __FUNCTION__, (unsigned int) ofs,
                 (unsigned int) *((uint32_t *) data + 0),
                 (unsigned int) *((uint32_t *) data + 1));
-        exit(1);
-        break;
+        bErr = true;
+        return;
     }
 
     irq_update.notify();
@@ -178,7 +178,7 @@ void vcore_mbox::bus_cb_read(uint64_t ofs, uint8_t *data,
 {
     uint32_t *d = (uint32_t *) data;
 
-    DBG_PRINTF("%s to 0x%lx\n", __FUNCTION__, (unsigned long) ofs);
+    MLOG_F(SIM, DBG, "%s to 0x%lx\n", __FUNCTION__, (unsigned long) ofs);
 
     switch (ofs) {
     case MAIL0_READ:
@@ -204,9 +204,10 @@ void vcore_mbox::bus_cb_read(uint64_t ofs, uint8_t *data,
         break;
 
     default:
-        printf("Bad %s::%s ofs=0x%X!\n", name(), __FUNCTION__,
+        MLOG_F(SIM, ERR, "Bad %s::%s ofs=0x%X!\n", name(), __FUNCTION__,
                 (unsigned int) ofs);
-        exit(1);
+        bErr = true;
+        return;
     }
 
     irq_update.notify();
@@ -219,7 +220,7 @@ void vcore_mbox::irq_thread()
         wait(irq_update);
 
         irq_line = (r_config & 0x1) && _mfifo.size();
-        DBG_PRINTF("New irq_line: %d\n", irq_line ? 1 : 0);
+        MLOG_F(SIM, DBG, "New irq_line: %d\n", irq_line ? 1 : 0);
     }
 }
 
