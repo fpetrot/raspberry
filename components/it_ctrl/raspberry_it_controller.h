@@ -80,7 +80,7 @@ protected:
 
 public:
     SC_HAS_PROCESS (raspberry_it_controller);
-    raspberry_it_controller(sc_core::sc_module_name name, ComponentParameters &params);
+    raspberry_it_controller(sc_core::sc_module_name name, Parameters &params);
     virtual ~raspberry_it_controller();
 
     //ports

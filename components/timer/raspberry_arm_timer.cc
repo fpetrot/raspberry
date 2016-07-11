@@ -29,7 +29,7 @@
 
 using namespace sc_core;
 
-raspberry_arm_timer::raspberry_arm_timer(sc_core::sc_module_name name, ComponentParameters &params)
+raspberry_arm_timer::raspberry_arm_timer(sc_core::sc_module_name name, Parameters &params)
     : Slave(name, params)
     , irq("irq")
 {

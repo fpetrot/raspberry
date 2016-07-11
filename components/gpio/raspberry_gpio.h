@@ -57,7 +57,7 @@ class raspberry_gpio: public Slave<>
 public:
     SC_HAS_PROCESS (raspberry_gpio);
     raspberry_gpio(sc_core::sc_module_name module_name);
-    raspberry_gpio(sc_core::sc_module_name name, ComponentParameters &params);
+    raspberry_gpio(sc_core::sc_module_name name, Parameters &params);
     virtual ~raspberry_gpio();
 
 private:
