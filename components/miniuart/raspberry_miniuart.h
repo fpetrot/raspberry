@@ -88,7 +88,7 @@ class raspberry_miniuart: public Slave<>
 {
 public:
     SC_HAS_PROCESS (raspberry_miniuart);
-    raspberry_miniuart(sc_core::sc_module_name _name);
+    raspberry_miniuart(sc_core::sc_module_name _name, Parameters &params, ConfigManager &c);
     virtual ~raspberry_miniuart();
 
 private:

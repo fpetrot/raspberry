@@ -37,7 +37,7 @@ public:
     OutPort<bool> p_mailbox_irq;
 
     SC_HAS_PROCESS (rpi_vcore);
-    rpi_vcore(sc_core::sc_module_name name, Parameters &params);
+    rpi_vcore(sc_core::sc_module_name name, Parameters &params, ConfigManager &c);
 
     virtual ~rpi_vcore() {}
 

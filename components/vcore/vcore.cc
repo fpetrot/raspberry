@@ -23,9 +23,9 @@
 
 using namespace sc_core;
 
-rpi_vcore::rpi_vcore(sc_core::sc_module_name name, Parameters &params)
-	: Master(name, params)
-	, m_mbox("vcore_mailbox")
+rpi_vcore::rpi_vcore(sc_core::sc_module_name name, Parameters &params, ConfigManager &c)
+	: Master(name, params, c)
+	, m_mbox("vcore_mailbox", c)
 	, m_fb("vcore_framebuffer")
     , p_mailbox_irq("mailbox-irq")
 {

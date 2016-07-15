@@ -52,7 +52,7 @@ private:
     void handle_fb_req(uint32_t req_addr);
 public:
     SC_HAS_PROCESS (vcore_mbox);
-    vcore_mbox(sc_core::sc_module_name module_name);
+    vcore_mbox(sc_core::sc_module_name module_name, ConfigManager &c);
     virtual ~vcore_mbox();
 
     sc_core::sc_out<bool> irq_line;

@@ -29,8 +29,8 @@
 using namespace sc_core;
 
 
-raspberry_it_controller::raspberry_it_controller(sc_core::sc_module_name name, Parameters &params)
-    : Slave(name, params)
+raspberry_it_controller::raspberry_it_controller(sc_core::sc_module_name name, Parameters &params, ConfigManager &c)
+    : Slave(name, params, c)
     , irq("irq")
     , fiq("fiq")
 {

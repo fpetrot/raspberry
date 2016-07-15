@@ -30,8 +30,8 @@ using namespace sc_core;
 
 const sc_time raspberry_system_timer::PERIOD = sc_time(100, SC_NS);
 
-raspberry_system_timer::raspberry_system_timer(sc_core::sc_module_name name, Parameters &params)
-    : Slave(name, params)
+raspberry_system_timer::raspberry_system_timer(sc_core::sc_module_name name, Parameters &params, ConfigManager &c)
+    : Slave(name, params, c)
     , irq("irq")
 {
 

@@ -26,14 +26,9 @@
 
 using namespace sc_core;
 
-raspberry_gpio::raspberry_gpio(sc_module_name module_name) :
-        Slave(module_name)
-{
-    //SC_THREAD (gpio_thread);
-}
-
-raspberry_gpio::raspberry_gpio(sc_core::sc_module_name name, Parameters &params) :
-        Slave(name, params)
+raspberry_gpio::raspberry_gpio(sc_core::sc_module_name name,
+                               Parameters &params, ConfigManager &c)
+    : Slave(name, params, c)
 {
 }
 
@@ -77,9 +72,9 @@ void raspberry_gpio::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool &bErr)
 
     default:
         MLOG_F(SIM, ERR, "Bad %s::%s ofs=0x%X, data=0x%X-%X!\n", name(),
-                __FUNCTION__, (unsigned int) ofs,
-                (unsigned int) *((uint32_t *) data + 0),
-                (unsigned int) *((uint32_t *) data + 1));
+               __FUNCTION__, (unsigned int) ofs,
+               (unsigned int) *((uint32_t *) data + 0),
+               (unsigned int) *((uint32_t *) data + 1));
         bErr = true;
         return;
     }
