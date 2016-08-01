@@ -1,5 +1,5 @@
 component:
-  name: rpi-arm-timer
+  implementation: rpi-arm-timer
   type: bcm2835-sp804
   class: raspberry_arm_timer
   include: raspberry_arm_timer.h

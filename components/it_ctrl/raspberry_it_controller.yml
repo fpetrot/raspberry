@@ -1,5 +1,5 @@
 component:
-  name: rpi-irq-ctrl
+  implementation: rpi-irq-ctrl
   type: bcm2835-irq-ctrl
   class: raspberry_it_controller
   include: raspberry_it_controller.h

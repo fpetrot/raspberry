@@ -1,5 +1,5 @@
 component:
-  name: rpi-uart
+  implementation: rpi-uart
   type: uart-pl011
   class: raspberry_uart
   include: raspberry_uart.h

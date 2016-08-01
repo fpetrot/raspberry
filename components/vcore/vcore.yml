@@ -1,5 +1,5 @@
 component:
-  name: rpi-vcore
+  implementation: rpi-vcore
   type: bcm2835-vcore
   class: rpi_vcore
   include: vcore.h
