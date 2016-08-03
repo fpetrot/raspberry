@@ -41,7 +41,7 @@ void raspberry_uart::raspberry_uart_init_register(void)
     memset(&state, 0, sizeof(state));
 }
 
-raspberry_uart::raspberry_uart(sc_core::sc_module_name name, Parameters &params, ConfigManager &c)
+raspberry_uart::raspberry_uart(sc_core::sc_module_name name, const Parameters &params, ConfigManager &c)
     : Slave(name, params, c)
     , irq_line("irq")
 {

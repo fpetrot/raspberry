@@ -23,7 +23,7 @@
 
 using namespace sc_core;
 
-rpi_vcore::rpi_vcore(sc_core::sc_module_name name, Parameters &params, ConfigManager &c)
+rpi_vcore::rpi_vcore(sc_core::sc_module_name name, const Parameters &params, ConfigManager &c)
 	: Master(name, params, c)
 	, m_mbox("vcore_mailbox", c)
 	, m_fb("vcore_framebuffer")

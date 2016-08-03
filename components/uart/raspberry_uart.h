@@ -95,7 +95,7 @@ class raspberry_uart : public Slave<>
 {
 public:
     SC_HAS_PROCESS (raspberry_uart);
-    raspberry_uart(sc_core::sc_module_name name, Parameters &params, ConfigManager &c);
+    raspberry_uart(sc_core::sc_module_name name, const Parameters &params, ConfigManager &c);
     virtual ~raspberry_uart();
 
 private:

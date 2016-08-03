@@ -104,7 +104,7 @@ void raspberry_miniuart::raspberry_miniuart_init_register(void)
 
 }
 
-raspberry_miniuart::raspberry_miniuart(sc_module_name _name, Parameters &params, ConfigManager &c)
+raspberry_miniuart::raspberry_miniuart(sc_module_name _name, const Parameters &params, ConfigManager &c)
     : Slave(_name, params, c)
 {
     int ppout[2], ppin[2];

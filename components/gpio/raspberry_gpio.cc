@@ -27,7 +27,7 @@
 using namespace sc_core;
 
 raspberry_gpio::raspberry_gpio(sc_core::sc_module_name name,
-                               Parameters &params, ConfigManager &c)
+                               const Parameters &params, ConfigManager &c)
     : Slave(name, params, c)
 {
 }
