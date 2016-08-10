@@ -5,6 +5,6 @@ find_package(Rabbits REQUIRED)
 
 add_subdirectory(components)
 
-rabbits_add_platforms(raspberry.yml)
+rabbits_add_platforms(raspberry-pi.yml)
 
 rabbits_add_dynlib(raspberry)
