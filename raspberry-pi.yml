@@ -6,59 +6,67 @@ platforms:
         type: simple-bus
 
       cpu:
-        type: cpu-arm
-        model: arm1176
-        bus-parent: bus
+        type: cpu-arm-cortex-a7
 
       mem:
         type: memory
         size: &mem_size 256M
-        bus-parent: bus
-        bus-mapping: { &mem_start 0x00000000: *mem_size }
+        bindings:
+          mem:
+            peer: bus
+            address: { &mem_start 0x00000000: *mem_size }
 
       irq-ctrl:
         type: bcm2835-irq-ctrl
-        bus-parent: bus
-        bus-mapping: { 0x2000b200: 0x200 }
-        irq-parent: cpu
+        bindings:
+          mem:
+            peer: bus
+            address: { 0x2000b200: 0x200 }
+          irq.cpu0-irq: cpu.irq
+          irq.cpu0-fiq: cpu.fiq
 
       uart:
         type: uart-pl011
-        bus-parent: bus
-        bus-mapping: { 0x20201000: 0x1000 }
-        irq-parent: irq-ctrl
-        irq-mapping: 57
+        bindings:
+          mem:
+            peer: bus
+            address: { 0x20201000: 0x1000 }
+          irq: irq-ctrl.irq57
 
       gpio:
         type: bcm2835-gpio
-        bus-parent: bus
-        bus-mapping: { 0x20200000: 0xb4 }
+        bindings:
+          mem:
+            peer: bus
+            address: { 0x20200000: 0xb4 }
 
       sys-timer:
         type: bcm2835-system-timer
-        bus-parent: bus
-        bus-mapping: { 0x20003000: 0x1c }
-        irq-parent: irq-ctrl
-        irq-mapping: 3
+        bindings:
+          mem:
+            peer: bus
+            address: { 0x20003000: 0x1c }
+          irq: irq-ctrl.irq3
 
       arm-timer:
         type: bcm2835-sp804
-        bus-parent: bus
-        bus-mapping: { 0x2000b400: 0x24 }
-        irq-parent: irq-ctrl
-        irq-mapping: 64
+        bindings:
+          mem:
+            peer: bus
+            address: { 0x2000b400: 0x24 }
+          irq: irq-ctrl.irq64
 
       vcore:
         type: bcm2835-vcore
-        bus-parent: bus
-        child-bus-mapping:
-          mailbox: { 0x2000b880: 0x24 }
-        irq-parent: irq-ctrl
-        irq-mapping:
-          mailbox-irq: 65
+        bindings:
+          mailbox-mem:
+            peer: bus
+            address: { 0x2000b880: 0x24 }
+          mailbox-irq: irq-ctrl.irq65
 
     plugins:
       bootloader:
+        type: bootloader
         architecture: arm
         ram-start: *mem_start
         kernel-load-addr: 0x00008000
