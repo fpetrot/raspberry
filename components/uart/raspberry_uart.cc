@@ -74,7 +74,7 @@ void raspberry_uart::irq_update_thread()
 void raspberry_uart::bus_cb_write(uint64_t ofs, uint8_t *data,
                                   unsigned int len, bool &bErr)
 {
-    uint8_t ch;
+    uint8_t ch = 0;
     uint32_t value;
     uint32_t pos;
 

@@ -118,8 +118,6 @@ public:
 private:
     sc_core::sc_event evRead;
 
-    int pin;
-    int pout;
     tty_state state;
 };
 
