@@ -22,6 +22,7 @@
 
 #include <rabbits/component/slave.h>
 #include <rabbits/component/port/out.h>
+#include <rabbits/component/port/uart.h>
 
 #define READ_BUF_SIZE           256
 
@@ -105,15 +106,14 @@ private:
             bool &bErr);
 
     sc_core::sc_event irq_update;
-    //void irq_update ();
     void read_thread();
     void irq_update_thread();
 
     void raspberry_uart_init_register(void);
 
 public:
-    //ports
-    OutPort<bool> irq_line;
+    OutPort<bool> p_irq;
+    UartPort p_uart;
 
 private:
     sc_core::sc_event evRead;

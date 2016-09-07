@@ -27,14 +27,11 @@ rpi_vcore::rpi_vcore(sc_core::sc_module_name name, const Parameters &params, Con
 	: Master(name, params, c)
 	, m_mbox("vcore_mailbox", c)
 	, m_fb("vcore_framebuffer")
-    , p_mailbox_irq("mailbox-irq")
+    , p_mailbox_irq("mailbox-irq", m_mbox.irq_line)
+    , p_mailbox_mem("mailbox-mem", m_mbox.p_bus.socket)
 {
     m_mbox.set_vcore(this);
     m_fb.set_vcore(this);
-
-    // XXX
-    //declare_slave("mailbox", m_mbox);
-    p_mailbox_irq.sc_p(m_mbox.irq_line);
 }
 
 uint32_t rpi_vcore::vcore_to_arm_addr(uint32_t addr)

@@ -27,13 +27,31 @@
 
 #include "rabbits/logger.h"
 
-#define TTY_INT_READ        1
-
 using namespace sc_core;
-
 
 void raspberry_uart::read_thread()
 {
+    std::vector<uint8_t> data;
+    int pos;
+
+    while(1) {
+        p_uart.recv(data);
+        for (auto c : data) {
+            MLOG_F(APP, TRC, "rcv_thread: got a char (0x%02x)\n", c);
+
+            while (state.read_count == READ_BUF_SIZE)
+                wait(evRead);
+
+            pos = (state.read_pos + state.read_count) % READ_BUF_SIZE;
+            state.read_buf[pos] = c;
+            state.read_count++;
+        }
+        /*Interrupt RX*/
+        state.int_pending = 1;
+        state.int_rx = 1;
+        irq_update.notify();
+    }
+
 }
 
 void raspberry_uart::raspberry_uart_init_register(void)
@@ -43,7 +61,8 @@ void raspberry_uart::raspberry_uart_init_register(void)
 
 raspberry_uart::raspberry_uart(sc_core::sc_module_name name, const Parameters &params, ConfigManager &c)
     : Slave(name, params, c)
-    , irq_line("irq")
+    , p_irq("irq")
+    , p_uart("uart")
 {
     raspberry_uart_init_register();
 
@@ -67,7 +86,7 @@ void raspberry_uart::irq_update_thread()
 
         MLOG_F(SIM, DBG, "%s - %s\n", __FUNCTION__, (flags != 0) ? "1" : "0");
 
-        irq_line.sc_p = (flags != 0);
+        p_irq.sc_p = (flags != 0);
     }
 }
 
@@ -115,7 +134,9 @@ void raspberry_uart::bus_cb_write(uint64_t ofs, uint8_t *data,
                 }
             } else {
                 ch = value;
-                ::write(1, &ch, 1);
+                std::vector<uint8_t> data;
+                data.push_back(ch);
+                p_uart.send(data);
             }
         }
         break;
