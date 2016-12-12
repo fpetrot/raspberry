@@ -26,16 +26,17 @@
 
 using namespace sc_core;
 
-rpi_vcore_fb::rpi_vcore_fb(sc_module_name mod_name) :
-        sc_module(mod_name)
+rpi_vcore_fb::rpi_vcore_fb(sc_core::sc_module_name n,
+                           const Parameters &params,
+                           ConfigManager &config)
+    : Component(n, params, config)
 {
     m_fb_state = FB_IDLE;
-    m_ui_fb = NULL;
 }
 
 void rpi_vcore_fb::set_info(const rpi_fb_info & info)
 {
-    ui_fb_info ui_info;
+    UiFramebufferInfo ui_info;
 
     LOG_F(SIM, DBG, "setting info\n");
     LOG_F(SIM, DBG, "pw: %" PRIu32 "\n", info.physical_w);
@@ -73,7 +74,7 @@ void rpi_vcore_fb::set_info(const rpi_fb_info & info)
     }
 
     if(m_ui_fb == NULL) {
-        m_ui_fb = ui::get_ui()->new_fb("raspberry framebuffer", ui_info);
+        m_ui_fb = get_config().get_ui().create_framebuffer("raspberry framebuffer", ui_info);
     } else {
         m_ui_fb->set_info(ui_info);
     }

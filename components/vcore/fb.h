@@ -22,9 +22,9 @@
 
 #include <inttypes.h>
 #include <rabbits/component/slave.h>
-#include <rabbits/ui/ui_fb.h>
 
 class rpi_vcore;
+class UiViewFramebufferIface;
 
 struct rpi_fb_info
 {
@@ -34,7 +34,7 @@ struct rpi_fb_info
     uint32_t x_offset, y_offset;
 };
 
-class rpi_vcore_fb: public sc_core::sc_module
+class rpi_vcore_fb: public Component
 {
 private:
     static const uint32_t FB_BASE_ADDR = 0x4c000000;
@@ -48,14 +48,14 @@ private:
 
     fb_state_e m_fb_state;
     rpi_fb_info m_info;
-    ui_fb * m_ui_fb;
+    UiViewFramebufferIface *m_ui_fb = nullptr;
 
 public:
     SC_HAS_PROCESS(rpi_vcore_fb);
-    rpi_vcore_fb(sc_core::sc_module_name mod_name);
-    virtual ~rpi_vcore_fb()
-    {
-    }
+    rpi_vcore_fb(sc_core::sc_module_name n,
+                 const Parameters &params,
+                 ConfigManager &config);
+    virtual ~rpi_vcore_fb() {}
 
     void set_vcore(rpi_vcore *vcore)
     {
