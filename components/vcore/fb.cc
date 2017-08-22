@@ -36,7 +36,7 @@ rpi_vcore_fb::rpi_vcore_fb(sc_core::sc_module_name n,
 
 void rpi_vcore_fb::set_info(const rpi_fb_info & info)
 {
-    UiFramebufferInfo ui_info;
+    FramebufferInfo ui_info;
 
     LOG_F(SIM, DBG, "setting info\n");
     LOG_F(SIM, DBG, "pw: %" PRIu32 "\n", info.physical_w);
@@ -49,23 +49,17 @@ void rpi_vcore_fb::set_info(const rpi_fb_info & info)
 
     m_info = info;
 
-    ui_info.physical_w = info.physical_w;
-    ui_info.physical_h = info.physical_h;
-    ui_info.virtual_w = info.virtual_w;
-    ui_info.virtual_h = info.virtual_h;
-    ui_info.x_offset = info.x_offset;
-    ui_info.y_offset = info.y_offset;
-    ui_info.buf = ((uint8_t*) mem_backdoor)
-            + m_vcore->vcore_to_arm_addr(FB_BASE_ADDR);
-    ui_info.pitch = 0; /* Default value */
+    ui_info.h = info.virtual_h;
+    ui_info.w = info.virtual_w;
+    ui_info.data = mem_backdoor;
 
     switch (info.bpp) {
     case 16:
-        ui_info.mode = FB_MODE_RGB565;
+        ui_info.pixel_info = FramebufferInfo::RGB_565;
         break;
 
     case 24:
-        ui_info.mode = FB_MODE_RGB888;
+        ui_info.pixel_info = FramebufferInfo::RGB_888;
         break;
 
     default:
@@ -73,6 +67,7 @@ void rpi_vcore_fb::set_info(const rpi_fb_info & info)
         goto setup_err;
     }
 
+    /* TODO: Switch to the framebuffer out port */
     if(m_ui_fb == NULL) {
         m_ui_fb = get_config().get_ui().create_framebuffer("raspberry framebuffer", ui_info);
     } else {
