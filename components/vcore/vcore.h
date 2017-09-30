@@ -35,6 +35,7 @@ private:
 
 public:
     OutPort<bool> p_mailbox_irq;
+    TlmTargetPort<> p_mailbox_mem;
 
     SC_HAS_PROCESS (rpi_vcore);
     rpi_vcore(sc_core::sc_module_name name, const Parameters &params, ConfigManager &c);
@@ -50,12 +51,13 @@ public:
     uint32_t vcore_to_arm_addr(uint32_t addr);
     uint32_t arm_to_vcore_addr(uint32_t addr);
 
-    virtual void dmi_hint_cb(uint64_t start, uint64_t size, void *data,
-            sc_core::sc_time read_latency, sc_core::sc_time write_latency)
-    {
-        if(start == 0) {
-            MLOG_F(APP, DBG, "found memory backdoor, addr=%p\n", data);
-            m_fb.mem_backdoor = data;
+    void end_of_elaboration() {
+        AddressRange r(0, 0x1000);
+        DmiInfo dmi_info;
+        bool probe = p_bus.dmi_probe(r, dmi_info);
+        if(probe) {
+            MLOG_F(APP, DBG, "found memory backdoor, addr=%p\n", dmi_info.ptr);
+            m_fb.mem_backdoor = dmi_info.ptr;
         }
     }
 };

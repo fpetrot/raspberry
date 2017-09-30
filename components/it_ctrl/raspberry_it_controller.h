@@ -25,6 +25,7 @@
 #include <rabbits/component/slave.h>
 #include <rabbits/component/port/in.h>
 #include <rabbits/component/port/out.h>
+#include <rabbits/component/port/vector.h>
 
 /* number of GPU input interrupt port */
 #define IT_CONT_PORT_NB 64
@@ -83,20 +84,9 @@ public:
     raspberry_it_controller(sc_core::sc_module_name name, const Parameters &params, ConfigManager &c);
     virtual ~raspberry_it_controller();
 
-    //ports
-    OutPort<bool> irq;
-    OutPort<bool> fiq; /* n/i */
-
-#if 0
-    /* Variable number of input ports.
-     * The array irq_num is used to get the corresponding number of irq_in[i]
-     */
-    sc_core::sc_in<bool> *irq_in;
-    sc_core::sc_in<bool> *irq_ap_in;
-#endif
-
-    std::vector< InPort<bool>* > irqs_in;
-
+    OutPort<bool> p_cpu_irq;
+    OutPort<bool> p_cpu_fiq;
+    VectorPort< InPort<bool> > p_irq;
 };
 
 #endif

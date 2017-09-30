@@ -21,6 +21,9 @@
 #define _RASPBERRY_GPIO_H_
 
 #include "rabbits/component/slave.h"
+#include <rabbits/component/port/out.h>
+#include <rabbits/component/port/inout.h>
+#include <rabbits/component/port/vector.h>
 
 #define GPFSEL0 0x0
 #define GPFSEL1 0x4
@@ -52,6 +55,56 @@
 #define GPPUDCLK0 0x98
 #define GPPUDCLK1 0x9C
 
+const int RPI_GPIO_COUNT = 54;
+
+class GPFSELn {
+private:
+    uint8_t m_fsel[RPI_GPIO_COUNT];
+
+public:
+    void reset() {
+        for(int i=0; i<6; i++) {
+            set(i, 0);
+        }
+    }
+
+    void set(uint8_t reg, uint32_t value) {
+        for(int i=0; i<10; i++) {
+            uint32_t index = 10*reg + i;
+            if(index < sizeof(m_fsel)) {
+                int fsel = (value >> (3 * i)) & 0x3;
+                m_fsel[index] = fsel;
+            }
+        }
+    }
+
+    uint32_t get(uint8_t reg) {
+        uint32_t value = 0;
+        for(int i=0; i<10; i++) {
+            uint32_t index = 10*reg + i;
+            if(index < sizeof(m_fsel)) {
+                value |= m_fsel[index] << (3 * i);
+            }
+        }
+        return value;
+    }
+
+    uint8_t get_function(int index) {
+        if(index >= 0 && index < 54) {
+            return m_fsel[index];
+        }
+        return false;
+    }
+
+    bool is_in(int index) {
+        return get_function(index) == 0;
+    }
+
+    bool is_out(int index) {
+        return get_function(index) == 1;
+    }
+};
+
 class raspberry_gpio: public Slave<>
 {
 public:
@@ -59,11 +112,24 @@ public:
     raspberry_gpio(sc_core::sc_module_name name, const Parameters &params, ConfigManager &c);
     virtual ~raspberry_gpio();
 
+    VectorPort< InOutPort<bool> > p_gpios;
+
+    uint32_t m_lev0, m_lev1;
+
+    sc_core::sc_event_or_list m_ev_gpios;
+
+    void gpset(uint32_t val, uint8_t start, uint8_t count, uint32_t *lev);
+    void gpclr(uint32_t val, uint8_t start, uint8_t count, uint32_t *lev);
+
 private:
     void bus_cb_read_32(uint64_t addr, uint32_t *data, bool &bErr);
     void bus_cb_write_32(uint64_t addr, uint32_t *data, bool &bErr);
 
     void gpio_thread();
+
+    void end_of_elaboration();
+
+    GPFSELn m_gpfsel;
 };
 
 #endif

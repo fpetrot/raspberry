@@ -58,23 +58,9 @@ void raspberry_system_timer::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool 
     switch (ofs) {
     case TIMER_CS:
         if (irq.sc_p) {
-            if (((val1 & 0x1)) && (cs & 0x1)) {
-                cs &= 0xFE;
-                MLOG_F(SIM, DBG, "event notify\n");
-                ev_irq_update.notify();
-            }
-            if (((val1 & 0x2) >> 1) && ((cs & 0x2) >> 1)) {
-                cs &= 0xFD;
-                MLOG_F(SIM, DBG, "event notify\n");
-                ev_irq_update.notify();
-            }
-            if (((val1 & 0x4) >> 2) && ((cs & 0x4) >> 2)) {
-                cs &= 0xFB;
-                MLOG_F(SIM, DBG, "event notify\n");
-                ev_irq_update.notify();
-            }
-            if (((val1 & 0x8) >> 3) && ((cs & 0x8) >> 3)) {
-                cs &= 0xF7;
+            uint32_t mask = val1 & cs & 0xF;
+            cs &= ~mask;
+            if(mask) {
                 MLOG_F(SIM, DBG, "event notify\n");
                 ev_irq_update.notify();
             }
@@ -219,9 +205,6 @@ void raspberry_system_timer::irq_thread()
 {
     for(;;) {
         irq.sc_p.write(cs != 0);
-        if(irq.sc_p) {
-            MLOG_F(SIM, DBG, "irq\n");
-        }
         wait(ev_irq_update);
     }
 }

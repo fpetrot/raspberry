@@ -1,12 +1,14 @@
 platforms:
-  raspberry-pi:
+  raspberry-pi-1:
     description: Raspberry PI 1 platform.
     components:
       bus:
         type: simple-bus
 
       cpu:
-        type: cpu-arm-cortex-a7
+        type: cpu-arm-1176
+        bindings:
+          mem: bus
 
       mem:
         type: memory
@@ -22,8 +24,8 @@ platforms:
           mem:
             peer: bus
             address: { 0x2000b200: 0x200 }
-          irq.cpu0-irq: cpu.irq
-          irq.cpu0-fiq: cpu.fiq
+          cpu-irq: cpu.irq
+          cpu-fiq: cpu.fiq
 
       uart:
         type: uart-pl011
@@ -59,6 +61,8 @@ platforms:
       vcore:
         type: bcm2835-vcore
         bindings:
+          mem:
+            peer: bus
           mailbox-mem:
             peer: bus
             address: { 0x2000b880: 0x24 }

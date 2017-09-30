@@ -28,7 +28,8 @@
 using namespace sc_core;
 
 vcore_mbox::vcore_mbox(sc_module_name module_name, ConfigManager &c) :
-        Slave(module_name, c)
+        Slave(module_name, c),
+        irq_line("irq")
 {
     SC_THREAD(irq_thread);
     m_vcore = NULL;

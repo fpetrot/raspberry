@@ -29,11 +29,52 @@ using namespace sc_core;
 raspberry_gpio::raspberry_gpio(sc_core::sc_module_name name,
                                const Parameters &params, ConfigManager &c)
     : Slave(name, params, c)
+    , p_gpios("gpios", RPI_GPIO_COUNT)
 {
+    m_gpfsel.reset();
+
+    for(auto &p : p_gpios) {
+        p.set_autoconnect_to(0);
+    }
 }
 
 raspberry_gpio::~raspberry_gpio()
 {
+}
+
+void raspberry_gpio::end_of_elaboration()
+{
+    for (auto &p : p_gpios) {
+        m_ev_gpios |= p.sc_p.default_event();
+    }
+}
+
+void raspberry_gpio::gpset(uint32_t val, uint8_t start, uint8_t count, uint32_t *lev) {
+    uint32_t changes = val & ~*lev;
+    uint32_t cur = 1;
+
+    for (int i = 0; i < count; i++) {
+        if ((changes & cur) && (m_gpfsel.is_out(start + i))) {
+            p_gpios[start + i].sc_p = !!(val & cur);
+        }
+        cur <<= 1;
+    }
+
+    *lev |= val;
+}
+
+void raspberry_gpio::gpclr(uint32_t val, uint8_t start, uint8_t count, uint32_t *lev) {
+    uint32_t changes = val & *lev;
+    uint32_t cur = 1;
+
+    for (int i = 0; i < count; i++) {
+        if ((changes & cur) && (m_gpfsel.is_out(start + i))) {
+            p_gpios[start + i].sc_p = !!(val & cur);
+        }
+        cur <<= 1;
+    }
+
+    *lev &= ~val;
 }
 
 void raspberry_gpio::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool &bErr)
@@ -44,13 +85,27 @@ void raspberry_gpio::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool &bErr)
     case GPFSEL2:
     case GPFSEL3:
     case GPFSEL4:
-    case GPFSEL5:
+    case GPFSEL5: {
+        uint8_t reg = ofs / 4;
+        m_gpfsel.set(reg, *data);
+        break;
+    }
     case GPSET0:
+        gpset(*data, 0, 32, &m_lev0);
+        break;
     case GPSET1:
+        gpset(*data, 32, 22, &m_lev1);
+        break;
     case GPCLR0:
+        gpclr(*data, 0, 32, &m_lev0);
+        break;
     case GPCLR1:
+        gpclr(*data, 32, 22, &m_lev1);
+        break;
     case GPLEV0:
     case GPLEV1:
+        // Read Only
+        break;
     case GPEDS0:
     case GPEDS1:
     case GPREN0:
@@ -68,6 +123,7 @@ void raspberry_gpio::bus_cb_write_32(uint64_t ofs, uint32_t *data, bool &bErr)
     case GPPUD:
     case GPPUDCLK0:
     case GPPUDCLK1:
+        MLOG_F(SIM, WRN, "writing to register [0x%02X] is not yet implemented\n", ofs & 0xff);
         break;
 
     default:
@@ -89,13 +145,27 @@ void raspberry_gpio::bus_cb_read_32(uint64_t ofs, uint32_t *data , bool &bErr)
     case GPFSEL2:
     case GPFSEL3:
     case GPFSEL4:
-    case GPFSEL5:
+    case GPFSEL5: {
+        uint8_t reg = ofs / 4;
+        *data = m_gpfsel.get(reg);
+        break;
+    }
     case GPSET0:
     case GPSET1:
+        // Write Only
+        *data = 0;
+        break;
     case GPCLR0:
     case GPCLR1:
+        // Write Only
+        *data = 0;
+        break;
     case GPLEV0:
+        *data = m_lev0;
+        break;
     case GPLEV1:
+        *data = m_lev1;
+        break;
     case GPEDS0:
     case GPEDS1:
     case GPREN0:
@@ -113,6 +183,7 @@ void raspberry_gpio::bus_cb_read_32(uint64_t ofs, uint32_t *data , bool &bErr)
     case GPPUD:
     case GPPUDCLK0:
     case GPPUDCLK1:
+        MLOG_F(SIM, WRN, "reading from register [0x%02X] is not yet implemented\n", ofs & 0xff);
         *data = 0;
         break;
 
@@ -127,5 +198,28 @@ void raspberry_gpio::bus_cb_read_32(uint64_t ofs, uint32_t *data , bool &bErr)
 
 void raspberry_gpio::gpio_thread()
 {
+    for(;;) {
+        wait(m_ev_gpios);
+
+        unsigned int i = 0;
+        for (auto &p : p_gpios) {
+            sc_inout<bool> &sc_p = p.sc_p;
+
+            if (sc_p.event() && m_gpfsel.is_in(i)) {
+                uint32_t new_val = sc_p.read();
+
+                if(i < 32) {
+                    m_lev0 &= ~(1 << i);
+                    m_lev0 |= new_val << i;
+                }
+                else {
+                    m_lev1 &= ~(1 << (i - 32));
+                    m_lev1 |= new_val << (i - 32);
+                }
+            }
+
+            i++;
+        }
+    }
 }
 

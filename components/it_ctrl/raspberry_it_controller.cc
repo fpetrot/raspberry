@@ -32,18 +32,13 @@ using namespace sc_core;
 raspberry_it_controller::raspberry_it_controller(sc_core::sc_module_name name, const Parameters &params,
                                                  ConfigManager &c)
     : Slave(name, params, c)
-    , irq("irq")
-    , fiq("fiq")
+    , p_cpu_irq("cpu-irq")
+    , p_cpu_fiq("cpu-fiq")
+    , p_irq("irq", IRQ_NUM)
 {
-
-    for (int i = 0; i < IRQ_NUM; i++) {
-        std::stringstream ss;
-        ss << i;
-        irqs_in.push_back(new InPort<bool>(ss.str()));
+    for(auto &p : p_irq) {
+        p.set_autoconnect_to(0);
     }
-
-    //irqs_in.init(IRQ_NUM);
-    //declare_vector_irq_in("", irqs_in);
 
     m_event_list |= ev_refresh;
 
@@ -57,11 +52,9 @@ void raspberry_it_controller::end_of_elaboration()
 
     Slave::end_of_elaboration();
 
-    /* Event list */
-    for (auto p : irqs_in) {
-        m_event_list |= p->sc_p.value_changed_event();
+    for (auto &p : p_irq) {
+        m_event_list |= p.sc_p.value_changed_event();
     }
-
 }
 
 raspberry_it_controller::~raspberry_it_controller()
@@ -255,28 +248,29 @@ void raspberry_it_controller::bus_cb_read_32(uint64_t ofs, uint32_t *data, bool 
 void raspberry_it_controller::it_thread()
 {
     bool irq_pending;
-    int i = 0;
 
     for (;;) {
         wait(m_event_list);
 
         irq_pending = false;
 
-        for (auto p : irqs_in) {
-            sc_in<bool> &sc_p = p->sc_p;
-            if (sc_p->posedge() && m_irq_enabled[i]) {
-                irq_pending = m_irq_pending[i] = true;
+        int i = 0;
+        for (auto &p : p_irq) {
+            sc_in<bool> &sc_p = p.sc_p;
+            if (sc_p->posedge()) {
+                m_irq_pending[i] = true;
             } else if(sc_p->negedge()) {
                 m_irq_pending[i] = false;
             }
+            irq_pending |= m_irq_pending[i] & m_irq_enabled[i];
             i++;
         }
 
         if (irq_pending) {
-            irq.sc_p = true;
+            p_cpu_irq.sc_p = true;
             MLOG_F(SIM, DBG, "Rising IRQ on CPU\n");
         } else {
-            irq.sc_p = false;
+            p_cpu_irq.sc_p = false;
         }
     }
 }
